@@ -7,11 +7,11 @@ import java.util.List;
 
 public class Constants {
 
-    public static final String CUSTOMS_ITEMS_JSON = "easypostdevtools_java/json/customs_items.json";
-    public static final String CUSTOMS_INFO_JSON = "easypostdevtools_java/json/customs_info.json";
-    public static final String CARRIERS_JSON = "easypostdevtools_java/json/carriers.json";
-    public static final String LABEL_OPTIONS_JSON = "easypostdevtools_java/json/label_options.json";
-    public static final String TRACKERS_JSON = "easypostdevtools_java/json/trackers.json";
+    public static final String CUSTOMS_ITEMS_JSON = "json/customs_items.json";
+    public static final String CUSTOMS_INFO_JSON = "json/customs_info.json";
+    public static final String CARRIERS_JSON = "json/carriers.json";
+    public static final String LABEL_OPTIONS_JSON = "json/label_options.json";
+    public static final String TRACKERS_JSON = "json/trackers.json";
 
     public static class Addresses {
         public enum COUNTRY {
@@ -98,7 +98,7 @@ public class Constants {
         }
 
         private static String getAddressFile(String path) {
-            return "easypostdevtools_java/json/addresses/" + path;
+            return "json/addresses/" + path;
         }
 
         public static String getAddressFile(STATE state) {

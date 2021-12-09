@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +17,15 @@ import java.util.Map;
 
 public class JSONReader {
 
-    public static String readFileFromResources(String filename) throws URISyntaxException, IOException {
+    public static Path getFilePathFromResources(String filename) throws URISyntaxException, IOException {
         URL resource = JSONReader.class.getClassLoader().getResource(filename);
-        byte[] bytes = Files.readAllBytes(Paths.get(resource.toURI()));
-        return new String(bytes);
+        return Paths.get(resource.toURI());
     }
 
     private static ArrayList<Map<String, Object>> readJsonFileJson(String path) {
         try {
-            path = readFileFromResources(path);
-            Reader reader = Files.newBufferedReader(Paths.get(path));
+            Path filePath = getFilePathFromResources(path);
+            Reader reader = Files.newBufferedReader(filePath);
             Gson gson = new Gson();
             Type type = new TypeToken<ArrayList<Map<String, Object>>>() {
             }.getType();
