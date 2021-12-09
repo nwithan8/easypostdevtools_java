@@ -24,6 +24,7 @@ public class JSONReader {
 
     private static ArrayList<Map<String, Object>> readJsonFileJson(String path) {
         try {
+            path = readFileFromResources(path);
             Reader reader = Files.newBufferedReader(Paths.get(path));
             Gson gson = new Gson();
             Type type = new TypeToken<ArrayList<Map<String, Object>>>() {
