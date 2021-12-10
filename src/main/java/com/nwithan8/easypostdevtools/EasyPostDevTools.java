@@ -1,6 +1,15 @@
 package com.nwithan8.easypostdevtools;
 
 import com.easypost.EasyPost;
+import com.easypost.model.Address;
+import com.easypost.model.CustomsInfo;
+import com.easypost.model.CustomsItem;
+import com.easypost.model.Fee;
+import com.easypost.model.Parcel;
+import com.easypost.model.PostageLabel;
+import com.easypost.model.Rate;
+import com.easypost.model.Shipment;
+import com.easypost.model.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -36,7 +45,24 @@ public class EasyPostDevTools {
         }
     }
 
-    public static class Address {
+    private static class Mapper {
+
+        public static JsonObject toJson(Object object) {
+            Gson gson = new Gson();
+            return gson.toJsonTree(object).getAsJsonObject();
+        }
+
+        public static Map<?, ?> toMap(Object object) {
+            Gson gson = new Gson();
+            return gson.fromJson(gson.toJson(object), Map.class);
+        }
+    }
+
+    public static class Addresses extends Mapper {
+
+        public static Map<String, Object> toMap(Address address) {
+            return (Map<String, Object>) Mapper.toMap(address);
+        }
 
         public enum ADDRESS_RELATIONSHIP {
             SAME_STATE,
@@ -63,43 +89,28 @@ public class EasyPostDevTools {
             return maps.get(0);
         }
 
-        public static JsonObject getJsonObject() {
-            Map<String, Object> map = getMap();
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static JsonObject getJsonObject(COUNTRY country) {
-            Map<String, Object> map = getMap(country);
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static JsonObject getJsonObject(STATE state) {
-            Map<String, Object> map = getMap(state);
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static com.easypost.model.Address get() {
+        public static Address get() {
             try {
                 Map<String, Object> map = getMap();
-                return com.easypost.model.Address.create(map);
+                return Address.create(map);
             } catch (Exception e) {
                 return null;
             }
         }
 
-        public static com.easypost.model.Address get(COUNTRY country) {
+        public static Address get(COUNTRY country) {
             try {
                 Map<String, Object> map = getMap(country);
-                return com.easypost.model.Address.create(map);
+                return Address.create(map);
             } catch (Exception e) {
                 return null;
             }
         }
 
-        public static com.easypost.model.Address get(STATE state) {
+        public static Address get(STATE state) {
             try {
                 Map<String, Object> map = getMap(state);
-                return com.easypost.model.Address.create(map);
+                return Address.create(map);
             } catch (Exception e) {
                 return null;
             }
@@ -111,21 +122,12 @@ public class EasyPostDevTools {
             return JSONReader.getRandomMapsFromJsonFile(stateAddressFile, amount, false);
         }
 
-        public static List<JsonObject> getJsonObjectsSameState(int amount) {
-            List<Map<String, Object>> maps = getMapsSameState(amount);
-            List<JsonObject> jsonObjects = new ArrayList<>();
-            for (Map<String, Object> map : maps) {
-                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
-            }
-            return jsonObjects;
-        }
-
-        public static List<com.easypost.model.Address> getSameState(int amount) {
+        public static List<Address> getSameState(int amount) {
             try {
                 List<Map<String, Object>> maps = getMapsSameState(amount);
-                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                List<Address> addresses = new ArrayList<Address>();
                 for (Map<String, Object> map : maps) {
-                    addresses.add(com.easypost.model.Address.create(map));
+                    addresses.add(Address.create(map));
                 }
                 return addresses;
             } catch (Exception e) {
@@ -146,21 +148,12 @@ public class EasyPostDevTools {
             return maps;
         }
 
-        public static List<JsonObject> getJsonObjectsDifferentStates(int amount) {
-            List<Map<String, Object>> maps = getMapsDifferentStates(amount);
-            List<JsonObject> jsonObjects = new ArrayList<>();
-            for (Map<String, Object> map : maps) {
-                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
-            }
-            return jsonObjects;
-        }
-
-        public static List<com.easypost.model.Address> getDifferentStates(int amount) {
+        public static List<Address> getDifferentStates(int amount) {
             try {
                 List<Map<String, Object>> maps = getMapsDifferentStates(amount);
-                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                List<Address> addresses = new ArrayList<Address>();
                 for (Map<String, Object> map : maps) {
-                    addresses.add(com.easypost.model.Address.create(map));
+                    addresses.add(Address.create(map));
                 }
                 return addresses;
             } catch (Exception e) {
@@ -177,21 +170,12 @@ public class EasyPostDevTools {
             return JSONReader.getRandomMapsFromJsonFile(countryAddressFile, amount, false);
         }
 
-        public static List<JsonObject> getJsonObjectsSameCountry(int amount) {
-            List<Map<String, Object>> maps = getMapsSameCountry(amount);
-            List<JsonObject> jsonObjects = new ArrayList<>();
-            for (Map<String, Object> map : maps) {
-                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
-            }
-            return jsonObjects;
-        }
-
-        public static List<com.easypost.model.Address> getSameCountry(int amount) {
+        public static List<Address> getSameCountry(int amount) {
             try {
                 List<Map<String, Object>> maps = getMapsSameCountry(amount);
-                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                List<Address> addresses = new ArrayList<Address>();
                 for (Map<String, Object> map : maps) {
-                    addresses.add(com.easypost.model.Address.create(map));
+                    addresses.add(Address.create(map));
                 }
                 return addresses;
             } catch (Exception e) {
@@ -212,30 +196,55 @@ public class EasyPostDevTools {
             return maps;
         }
 
-        public static List<JsonObject> getJsonObjectsDifferentCountries(int amount) {
-            List<Map<String, Object>> maps = getMapsDifferentCountries(amount);
-            List<JsonObject> jsonObjects = new ArrayList<>();
-            for (Map<String, Object> map : maps) {
-                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
-            }
-            return jsonObjects;
-        }
-
-        public static List<com.easypost.model.Address> getDifferentCountries(int amount) {
+        public static List<Address> getDifferentCountries(int amount) {
             try {
                 List<Map<String, Object>> maps = getMapsDifferentCountries(amount);
-                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                List<Address> addresses = new ArrayList<Address>();
                 for (Map<String, Object> map : maps) {
-                    addresses.add(com.easypost.model.Address.create(map));
+                    addresses.add(Address.create(map));
                 }
                 return addresses;
             } catch (Exception e) {
                 return null;
             }
         }
+
+        public static List<Map<String, Object>> getMaps(ADDRESS_RELATIONSHIP relationship, int amount) {
+            switch (relationship) {
+                case SAME_STATE:
+                    return getMapsSameState(amount);
+                case DIFFERENT_STATE:
+                    return getMapsDifferentStates(amount);
+                case SAME_COUNTRY:
+                    return getMapsSameCountry(amount);
+                case DIFFERENT_COUNTRY:
+                    return getMapsDifferentCountries(amount);
+                default:
+                    return null;
+            }
+        }
+
+        public static List<Address> get(ADDRESS_RELATIONSHIP relationship, int amount) {
+            switch (relationship) {
+                case SAME_STATE:
+                    return getSameState(amount);
+                case DIFFERENT_STATE:
+                    return getDifferentStates(amount);
+                case SAME_COUNTRY:
+                    return getSameCountry(amount);
+                case DIFFERENT_COUNTRY:
+                    return getDifferentCountries(amount);
+                default:
+                    return null;
+            }
+        }
     }
 
-    public static class Parcel {
+    public static class Parcels {
+
+        public static Map<String, Object> toMap(Parcel parcel) {
+            return (Map<String, Object>) Mapper.toMap(parcel);
+        }
 
         public static Map<String, Object> getMap() {
             Map<String, Object> map = new HashMap<>();
@@ -246,28 +255,55 @@ public class EasyPostDevTools {
             return map;
         }
 
-        public static JsonObject getJsonObject() {
-            Map<String, Object> map = getMap();
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static com.easypost.model.Parcel get() {
+        public static Parcel get() {
             try {
                 Map<String, Object> map = getMap();
-                return com.easypost.model.Parcel.create(map);
+                return Parcel.create(map);
             } catch (Exception e) {
                 return null;
             }
         }
 
+        public static Parcel retrieve(String id) {
+            try {
+                return Parcel.retrieve(id);
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
 
-    public static class Shipment {
+    public static class Insurance {
+
+        public static Map<String, Object> getMap(float amount) {
+            Map<String, Object> insuranceMap = new HashMap<>();
+            insuranceMap.put("amount", amount);
+            return insuranceMap;
+        }
+
+        public static Map<String, Object> getMap() {
+            return getMap(Random.getRandomFloatInRange(1, 100));
+        }
+
+        public static Shipment insure(Shipment shipment) {
+            return Shipments.addInsurance(shipment);
+        }
+
+        public static Shipment insure(Shipment shipment, float amount) {
+            return Shipments.addInsurance(shipment, amount);
+        }
+    }
+
+    public static class Shipments {
+
+        public static Map<String, Object> toMap(Shipment shipment) {
+            return (Map<String, Object>) Mapper.toMap(shipment);
+        }
 
         public static Map<String, Object> getMap() {
             try {
-                List<Map<String, Object>> addressMaps = Address.getMapsDifferentStates(2);
-                Map<String, Object> parcelMap = Parcel.getMap();
+                List<Map<String, Object>> addressMaps = Addresses.getMapsDifferentStates(2);
+                Map<String, Object> parcelMap = Parcels.getMap();
 
                 Map<String, Object> shipmentMap = new HashMap<>();
                 shipmentMap.put("to_address", addressMaps.get(0));
@@ -279,27 +315,174 @@ public class EasyPostDevTools {
             }
         }
 
-        public static JsonObject getJsonObject() {
-            Map<String, Object> map = getMap();
-            return JSONReader.convertMapToJsonObject(map);
+        public static Map<String, Object> getMap(Map<String, Object> toAddressMap, Map<String, Object> fromAddressMap, Map<String, Object> parcelMap) {
+            try {
+                Map<String, Object> shipmentMap = new HashMap<>();
+                shipmentMap.put("to_address", toAddressMap);
+                shipmentMap.put("from_address", fromAddressMap);
+                shipmentMap.put("parcel", parcelMap);
+                return shipmentMap;
+            } catch (Exception e) {
+                return null;
+            }
         }
 
-        public static com.easypost.model.Shipment get() {
+        public static Map<String, Object> getReturnMap() {
             try {
                 Map<String, Object> map = getMap();
-                return com.easypost.model.Shipment.create(map);
+                map.put("is_return", true);
+                return map;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Map<String, Object> getReturnMap(Map<String, Object> toAddressMap, Map<String, Object> fromAddressMap, Map<String, Object> parcelMap) {
+            try {
+                Map<String, Object> map = getMap(toAddressMap, fromAddressMap, parcelMap);
+                map.put("is_return", true);
+                return map;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment get() {
+            try {
+                Map<String, Object> map = getMap();
+                return create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment getReturn() {
+            try {
+                Map<String, Object> map = getReturnMap();
+                return create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment create(Map<String, Object> shipmentMap) {
+            try {
+                return Shipment.create(shipmentMap);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment addInsurance(Shipment shipment) {
+            try {
+                Map<String, Object> insuranceMap = Insurance.getMap();
+                return shipment.insure(insuranceMap);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment addInsurance(Shipment shipment, float amount) {
+            try {
+                Map<String, Object> insuranceMap = Insurance.getMap(amount);
+                return shipment.insure(insuranceMap);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Shipment refund(Shipment shipment) {
+            try {
+                return shipment.refund();
+            } catch (Exception ignored) {
+                return null;
+            }
+        }
+
+        public static Map<String, Object> markForReturn(Map<String, Object> shipmentMap) {
+            shipmentMap.put("is_return", true);
+            return shipmentMap;
+        }
+
+        // waiting on ability to convert attributes to map to modify shipment for Shipment markForReturn
+    }
+
+    public static class Options {
+
+        public static Map<String, Object> getMap() {
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.OPTIONS_JSON, 1, true);
+            return maps.get(0);
+        }
+    }
+
+    public static class Rates {
+
+        public static Map<String, Object> toMap(Rate rate) {
+            return (Map<String, Object>) Mapper.toMap(rate);
+        }
+
+        public static List<Rate> get() {
+            try {
+                Shipment shipment = Shipments.get();
+                return get(shipment);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Rate> get(Map<String, Object> shipmentMap) {
+            try {
+                Shipment shipment = Shipment.create(shipmentMap);
+                return get(shipment);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Rate> get(Shipment shipment) {
+            try {
+                return shipment.getRates();
             } catch (Exception e) {
                 return null;
             }
         }
     }
 
-    public static class TaxIdentifier {
+    public static class Smartrates {
+
+        public static List<Rate> get() {
+            try {
+                Shipment shipment = Shipments.get();
+                return get(shipment);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Rate> get(Map<String, Object> shipmentMap) {
+            try {
+                Shipment shipment = Shipments.create(shipmentMap);
+                return get(shipment);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Rate> get(Shipment shipment) {
+            try {
+                return shipment.getSmartrates();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    public static class TaxIdentifiers {
 
         /*
         public static List<TaxIdentifier> getRandomTaxIdentifiers() {
             try {
-                com.easypost.model.Shipment shipment = Shipment.get();
+                Shipment shipment = Shipment.get();
                 assert shipment != null;
                 return shipment.getTaxIdentifiers();
             } catch (Exception e) {
@@ -309,23 +492,74 @@ public class EasyPostDevTools {
          */
     }
 
-    public static class CustomsItem {
+    public static class Trackers {
+
+        public static Map<String, Object> toMap(Tracker tracker) {
+            return (Map<String, Object>) Mapper.toMap(tracker);
+        }
+
+        public static Map<String, Object> getMap() {
+            try {
+                List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.TRACKERS_JSON, 1, true);
+                return maps.get(0);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Tracker get() {
+            try {
+                Map<String, Object> map = getMap();
+                return Tracker.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    public static class Batch {
+    }
+
+    public static class CustomsInfos {
+
+        public static Map<String, Object> toMap(CustomsInfo customsInfo) {
+            return (Map<String, Object>) Mapper.toMap(customsInfo);
+        }
+
+        public static Map<String, Object> getMap(int itemsAmount, boolean allowDuplicatesItems) {
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_INFO_JSON, 1, true);
+            Map<String, Object> map = maps.get(0);
+            map.put("customs_items", CustomsItems.getRandomCustomsItemMaps(itemsAmount, allowDuplicatesItems));
+            return map;
+        }
+
+        public static CustomsInfo get(int itemsAmount, boolean allowDuplicatesItems) {
+            try {
+                Map<String, Object> map = getMap(itemsAmount, allowDuplicatesItems);
+                return CustomsInfo.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+    }
+
+    public static class CustomsItems {
+
+        public static Map<String, Object> toMap(CustomsItem customsItem) {
+            return (Map<String, Object>) Mapper.toMap(customsItem);
+        }
 
         public static List<Map<String, Object>> getRandomCustomsItemMaps(int amount, boolean allowDuplicates) {
             return JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_ITEMS_JSON, amount, allowDuplicates);
         }
 
-        public static JsonObject getRandomCustomsItemJsonObject() {
-            List<Map<String, Object>> maps = getRandomCustomsItemMaps(1, true);
-            return JSONReader.convertMapToJsonObject(maps.get(0));
-        }
-
-        public static List<com.easypost.model.CustomsItem> get(int amount, boolean allowDuplicates) {
+        public static List<CustomsItem> get(int amount, boolean allowDuplicates) {
             try {
                 List<Map<String, Object>> maps = getRandomCustomsItemMaps(amount, allowDuplicates);
-                List<com.easypost.model.CustomsItem> customsItems = new ArrayList<com.easypost.model.CustomsItem>();
+                List<CustomsItem> customsItems = new ArrayList<CustomsItem>();
                 for (Map<String, Object> map : maps) {
-                    customsItems.add(com.easypost.model.CustomsItem.create(map));
+                    customsItems.add(CustomsItem.create(map));
                 }
                 return customsItems;
             } catch (Exception e) {
@@ -335,32 +569,81 @@ public class EasyPostDevTools {
 
     }
 
-    public static class CustomsInfo {
+    public static class Events {
+    }
 
-        public static Map<String, Object> getMap(int itemsAmount, boolean allowDuplicatesItems) {
-            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_INFO_JSON, 1, true);
-            Map<String, Object> map = maps.get(0);
-            map.put("customs_items", CustomsItem.getRandomCustomsItemMaps(itemsAmount, allowDuplicatesItems));
-            return map;
+    public static class Fees {
+
+        public static Map<String, Object> toMap(Fee fee) {
+            return (Map<String, Object>) Mapper.toMap(fee);
         }
 
-        public static JsonObject getJsonObject(int itemsAmount, boolean allowDuplicatesItems) {
-            Map<String, Object> map = getMap(itemsAmount, allowDuplicatesItems);
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static com.easypost.model.CustomsInfo get(int itemsAmount, boolean allowDuplicatesItems) {
+        public static List<Fee> get() {
             try {
-                Map<String, Object> map = getMap(itemsAmount, allowDuplicatesItems);
-                return com.easypost.model.CustomsInfo.create(map);
+                return Shipments.get().getFees();
             } catch (Exception e) {
                 return null;
             }
         }
 
+        public static List<Fee> get(Shipment shipment) {
+            try {
+                return shipment.getFees();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Fee> get(Map<String, Object> shipmentMap) {
+            try {
+                return Shipment.create(shipmentMap).getFees();
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
 
-    public static class Carrier {
+    public static class Orders {
+    }
+
+    public static class Pickups {
+
+        public static Map<String, Object> getMap() {
+            try {
+                List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.PICKUPS_JSON, 1, true);
+                Map<String, Object> map = maps.get(0);
+
+                Map<String, Object> toAddressMap = Addresses.getMap();
+                Map<String, Object> fromAddressMap = Addresses.getMap();
+                map.put("address", toAddressMap);
+
+                Map<String, Object> parcelMap = Parcels.getMap();
+                Map<String, Object> shipmentMap = Shipments.getMap(toAddressMap, fromAddressMap, parcelMap);
+                map.put("shipment", shipmentMap);
+
+                // List<Map<String, Object>> carrierAccountsMaps = CarrierAccounts.getMaps(1, true);
+
+
+                // map.put()
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    public static class Reports {
+    }
+
+    public static class ScanForms {
+    }
+
+    public static class Webhooks {
+    }
+
+    public static class Users {
+    }
+
+    public static class Carriers {
 
         public static List<String> get(int amount) {
             List<String> carriersStrings = new ArrayList<>();
@@ -378,25 +661,23 @@ public class EasyPostDevTools {
 
     }
 
-    public static class Label {
+    public static class Labels {
 
         public static Map<String, Object> getRandomLabelOptions() {
             List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.LABEL_OPTIONS_JSON, 1, true);
             return maps.get(0);
         }
-
-        public static JsonObject getRandomLabelOptionsJsonObject() {
-            Map<String, Object> map = getRandomLabelOptions();
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
     }
 
-    public static class PostageLabel {
+    public static class PostageLabels {
 
-        public static com.easypost.model.PostageLabel get() {
+        public static Map<String, Object> toMap(PostageLabel postageLabel) {
+            return (Map<String, Object>) Mapper.toMap(postageLabel);
+        }
+
+        public static PostageLabel get() {
             try {
-                return Shipment.get().getPostageLabel();
+                return Shipments.get().getPostageLabel();
             } catch (Exception e) {
                 return null;
             }
@@ -404,53 +685,4 @@ public class EasyPostDevTools {
 
     }
 
-    public static class Fee {
-        public static List<com.easypost.model.Fee> get() {
-            try {
-                return Shipment.get().getFees();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-    }
-
-    public static class Insurance {
-
-        public static Map<String, Object> getInsuranceMap(float amount) {
-            Map<String, Object> insuranceMap = new HashMap<>();
-            insuranceMap.put("amount", amount);
-            return insuranceMap;
-        }
-
-        public static Map<String, Object> getMap() {
-            return getInsuranceMap(Random.getRandomFloatInRange(1, 100));
-        }
-
-    }
-
-    public static class Tracker {
-
-        public static Map<String, Object> getMap() {
-            try {
-                List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.TRACKERS_JSON, 1, true);
-                return maps.get(0);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        public static JsonObject getJsonObject() {
-            Map<String, Object> map = getMap();
-            return JSONReader.convertMapToJsonObject(map);
-        }
-
-        public static com.easypost.model.Tracker get() {
-            try {
-                Map<String, Object> map = getMap();
-                return com.easypost.model.Tracker.create(map);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-    }
 }
