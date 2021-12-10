@@ -1,14 +1,6 @@
 package com.nwithan8.easypostdevtools;
 
 import com.easypost.EasyPost;
-import com.easypost.model.Address;
-import com.easypost.model.CustomsInfo;
-import com.easypost.model.CustomsItem;
-import com.easypost.model.Fee;
-import com.easypost.model.Parcel;
-import com.easypost.model.PostageLabel;
-import com.easypost.model.Shipment;
-import com.easypost.model.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -17,6 +9,7 @@ import com.nwithan8.easypostdevtools.Constants.Addresses.COUNTRY;
 import com.nwithan8.easypostdevtools.Constants.Addresses.STATE;
 import com.nwithan8.easypostdevtools.utils.Random;
 import com.nwithan8.easypostdevtools.utils.JSONReader;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,18 +17,17 @@ import java.util.Map;
 
 public class EasyPostDevTools {
 
-    private final Dotenv dotenv;
-
-    public EasyPostDevTools(String envDir) {
-        dotenv = Dotenv.configure().directory(envDir).load();
-    }
-
     public enum KeyType {
         TEST,
         PRODUCTION
     }
 
-    public void setupKey(KeyType type) {
+    public static void setupKey(String key) {
+        EasyPost.apiKey = key;
+    }
+
+    public static void setupKey(String envDir, KeyType type) {
+        Dotenv dotenv = Dotenv.configure().directory(envDir).load();
         switch (type) {
             case TEST:
                 setupKey(dotenv.get("EASYPOST_TEST_KEY"));
@@ -44,386 +36,421 @@ public class EasyPostDevTools {
         }
     }
 
-    private static JsonObject convertMapToJsonObject(Map<String, Object> map) {
-        if (map == null) {
-            return null;
-        }
-        return new Gson().toJsonTree(map).getAsJsonObject();
-    }
+    public static class Address {
 
-    public static void setupKey(String key) {
-        EasyPost.apiKey = key;
-    }
-
-    // addresses
-
-    public enum ADDRESS_RELATIONSHIP {
-        SAME_STATE,
-        DIFFERENT_STATE,
-        SAME_COUNTRY,
-        DIFFERENT_COUNTRY
-    }
-
-    public static Map<String, Object> getRandomAddressMap(COUNTRY country) {
-        String addressFile = Constants.Addresses.getAddressFile(country);
-        List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
-        return maps.get(0);
-    }
-
-    public static Map<String, Object> getRandomAddressMap(STATE state) {
-        String addressFile = Constants.Addresses.getAddressFile(state);
-        List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
-        return maps.get(0);
-    }
-
-    public static Map<String, Object> getRandomAddressMap() {
-        String addressFile = Constants.Addresses.getRandomAddressFile();
-        List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
-        return maps.get(0);
-    }
-
-    public static JsonObject getRandomAddressJsonObject() {
-        Map<String, Object> map = getRandomAddressMap();
-        return convertMapToJsonObject(map);
-    }
-
-    public static Address getRandomAddress() {
-        try {
-            Map<String, Object> map = getRandomAddressMap();
-            return Address.create(map);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static List<Map<String, Object>> getRandomAddressMapsSameState(int amount) {
-        STATE state = STATE.getRandom();
-        String stateAddressFile = Constants.Addresses.getAddressFile(state);
-        return JSONReader.getRandomMapsFromJsonFile(stateAddressFile, amount, false);
-    }
-
-    public static List<JsonObject> getRandomAddressJsonObjectsSameState(int amount) {
-        List<Map<String, Object>> maps = getRandomAddressMapsSameState(amount);
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for (Map<String, Object> map : maps) {
-            jsonObjects.add(convertMapToJsonObject(map));
-        }
-        return jsonObjects;
-    }
-
-    public static List<Address> getRandomAddressesSameState(int amount) {
-        try {
-            List<Map<String, Object>> maps = getRandomAddressMapsSameState(amount);
-            List<Address> addresses = new ArrayList<Address>();
-            for (Map<String, Object> map : maps) {
-                addresses.add(Address.create(map));
-            }
-            return addresses;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static List<Map<String, Object>> getRandomAddressMapsDifferentStates(int amount) {
-        if (amount > STATE.getAmount()) {
-            throw new IllegalArgumentException("Amount cannot be greater than " + STATE.getAmount());
+        public enum ADDRESS_RELATIONSHIP {
+            SAME_STATE,
+            DIFFERENT_STATE,
+            SAME_COUNTRY,
+            DIFFERENT_COUNTRY
         }
 
-        List<Map<String, Object>> maps = new ArrayList<>();
-        List<Object> states = Random.getRandomItemsFromList(STATE.getAll(), amount, false);
-        for (Object state : states) {
-            maps.add(getRandomAddressMap((STATE) state));
-        }
-        return maps;
-    }
-
-    public static List<JsonObject> getRandomAddressJsonObjectsDifferentStates(int amount) {
-        List<Map<String, Object>> maps = getRandomAddressMapsDifferentStates(amount);
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for (Map<String, Object> map : maps) {
-            jsonObjects.add(convertMapToJsonObject(map));
-        }
-        return jsonObjects;
-    }
-
-    public static List<Address> getRandomAddressesDifferentStates(int amount) {
-        try {
-            List<Map<String, Object>> maps = getRandomAddressMapsDifferentStates(amount);
-            List<Address> addresses = new ArrayList<Address>();
-            for (Map<String, Object> map : maps) {
-                addresses.add(Address.create(map));
-            }
-            return addresses;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static List<Map<String, Object>> getRandomAddressMapsSameCountry(int amount) {
-        COUNTRY country = COUNTRY.getRandom();
-        if (country == COUNTRY.UNITED_STATES) {
-            return getRandomAddressMapsDifferentStates(amount);
-        }
-        String countryAddressFile = Constants.Addresses.getAddressFile(country);
-        return JSONReader.getRandomMapsFromJsonFile(countryAddressFile, amount, false);
-    }
-
-    public static List<JsonObject> getRandomAddressJsonObjectsSameCountry(int amount) {
-        List<Map<String, Object>> maps = getRandomAddressMapsSameCountry(amount);
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for (Map<String, Object> map : maps) {
-            jsonObjects.add(convertMapToJsonObject(map));
-        }
-        return jsonObjects;
-    }
-
-    public static List<Address> getRandomAddressesSameCountry(int amount) {
-        try {
-            List<Map<String, Object>> maps = getRandomAddressMapsSameCountry(amount);
-            List<Address> addresses = new ArrayList<Address>();
-            for (Map<String, Object> map : maps) {
-                addresses.add(Address.create(map));
-            }
-            return addresses;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static List<Map<String, Object>> getRandomAddressMapsDifferentCountries(int amount) {
-        if (amount > COUNTRY.getAmount()) {
-            throw new IllegalArgumentException("Amount cannot be greater than " + COUNTRY.getAmount());
-        }
-
-        List<Map<String, Object>> maps = new ArrayList<>();
-        List<Object> countries = Random.getRandomItemsFromList(COUNTRY.getAll(), amount, false);
-        for (Object country : countries) {
-            maps.add(getRandomAddressMap((COUNTRY) country));
-        }
-        return maps;
-    }
-
-    public static List<JsonObject> getRandomAddressJsonObjectsDifferentCountries(int amount) {
-        List<Map<String, Object>> maps = getRandomAddressMapsDifferentCountries(amount);
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for (Map<String, Object> map : maps) {
-            jsonObjects.add(convertMapToJsonObject(map));
-        }
-        return jsonObjects;
-    }
-
-    public static List<Address> getRandomAddressesDifferentCountries(int amount) {
-        try {
-            List<Map<String, Object>> maps = getRandomAddressMapsDifferentCountries(amount);
-            List<Address> addresses = new ArrayList<Address>();
-            for (Map<String, Object> map : maps) {
-                addresses.add(Address.create(map));
-            }
-            return addresses;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // parcels
-
-    public static Map<String, Object> getRandomParcelMap() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("weight", Random.getRandomFloatInRange(0, 100));
-        map.put("height", Random.getRandomFloatInRange(0, 100));
-        map.put("width", Random.getRandomFloatInRange(0, 100));
-        map.put("length", Random.getRandomFloatInRange(0, 100));
-        return map;
-    }
-
-    public static JsonObject getRandomParcelJsonObject() {
-        Map<String, Object> map = getRandomParcelMap();
-        return convertMapToJsonObject(map);
-    }
-
-    public static Parcel getRandomParcel() {
-        try {
-            Map<String, Object> map = getRandomParcelMap();
-            return Parcel.create(map);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // shipments
-
-    public static Map<String, Object> getRandomShipmentMap() {
-        try {
-            List<Map<String, Object>> addressMaps = getRandomAddressMapsDifferentStates(2);
-            Map<String, Object> parcelMap = getRandomParcelMap();
-
-            Map<String, Object> shipmentMap = new HashMap<>();
-            shipmentMap.put("to_address", addressMaps.get(0));
-            shipmentMap.put("from_address", addressMaps.get(1));
-            shipmentMap.put("parcel", parcelMap);
-            return shipmentMap;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static JsonObject getRandomShipmentJsonObject() {
-        Map<String, Object> map = getRandomShipmentMap();
-        return convertMapToJsonObject(map);
-    }
-
-    public static Shipment getRandomShipment() {
-        try {
-            Map<String, Object> map = getRandomShipmentMap();
-            return Shipment.create(map);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // tax identifiers
-
-    /*
-    public static List<TaxIdentifier> getRandomTaxIdentifiers() {
-        try {
-            Shipment shipment = getRandomShipment();
-            assert shipment != null;
-            return shipment.getTaxIdentifiers();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-     */
-
-    // customs items
-
-    public static List<Map<String, Object>> getRandomCustomsItemMaps(int amount, boolean allowDuplicates) {
-        return JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_ITEMS_JSON, amount, allowDuplicates);
-    }
-
-    public static JsonObject getRandomCustomsItemJsonObject() {
-        List<Map<String, Object>> maps = getRandomCustomsItemMaps(1, true);
-        return convertMapToJsonObject(maps.get(0));
-    }
-
-    public static List<CustomsItem> getRandomCustomsItems(int amount, boolean allowDuplicates) {
-        try {
-            List<Map<String, Object>> maps = getRandomCustomsItemMaps(amount, allowDuplicates);
-            List<CustomsItem> customsItems = new ArrayList<CustomsItem>();
-            for (Map<String, Object> map : maps) {
-                customsItems.add(CustomsItem.create(map));
-            }
-            return customsItems;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // customs info
-
-    public static Map<String, Object> getRandomCustomsInfoMap(int itemsAmount, boolean allowDuplicatesItems) {
-        List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_INFO_JSON, 1, true);
-        Map<String, Object> map = maps.get(0);
-        map.put("customs_items", getRandomCustomsItemMaps(itemsAmount, allowDuplicatesItems));
-        return map;
-    }
-
-    public static JsonObject getRandomCustomsInfoJsonObject(int itemsAmount, boolean allowDuplicatesItems) {
-        Map<String, Object> map = getRandomCustomsInfoMap(itemsAmount, allowDuplicatesItems);
-        return convertMapToJsonObject(map);
-    }
-
-    public static CustomsInfo getRandomCustomsInfo(int itemsAmount, boolean allowDuplicatesItems) {
-        try {
-            Map<String, Object> map = getRandomCustomsInfoMap(itemsAmount, allowDuplicatesItems);
-            return CustomsInfo.create(map);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // carriers
-
-    public static List<String> getRandomCarriers(int amount) {
-        List<String> carriersStrings = new ArrayList<>();
-        List<Object> carriers = JSONReader.getRandomItemsFromJsonFile(Constants.CARRIERS_JSON, amount, false);
-        for (Object carrier : carriers) {
-            carriersStrings.add(carrier.toString());
-        }
-        return carriersStrings;
-    }
-
-    public static String getRandomCarrier() {
-        List<String> carriers = getRandomCarriers(1);
-        return carriers.get(0);
-    }
-
-    // labels
-
-    public static Map<String, Object> getRandomLabelOptions() {
-        List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.LABEL_OPTIONS_JSON, 1, true);
-        return maps.get(0);
-    }
-
-    public static JsonObject getRandomLabelOptionsJsonObject() {
-        Map<String, Object> map = getRandomLabelOptions();
-        return convertMapToJsonObject(map);
-    }
-
-    // postage labels
-
-    public static PostageLabel getRandomPostageLabel() {
-        try {
-            return getRandomShipment().getPostageLabel();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // fees
-
-    public static List<Fee> getRandomFees() {
-        try {
-            return getRandomShipment().getFees();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // insurance
-
-    public static Map<String, Object> getInsuranceMap(float amount) {
-        Map<String, Object> insuranceMap = new HashMap<>();
-        insuranceMap.put("amount", amount);
-        return insuranceMap;
-    }
-
-    public static Map<String, Object> getRandomInsuranceMap() {
-        return getInsuranceMap(Random.getRandomFloatInRange(1, 100));
-    }
-
-    // trackers
-
-    public static Map<String, Object> getRandomTrackerMap() {
-        try {
-            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.TRACKERS_JSON, 1, true);
+        public static Map<String, Object> getMap() {
+            String addressFile = Constants.Addresses.getRandomAddressFile();
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
             return maps.get(0);
-        } catch (Exception e) {
-            return null;
+        }
+
+        public static Map<String, Object> getMap(COUNTRY country) {
+            String addressFile = Constants.Addresses.getAddressFile(country);
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
+            return maps.get(0);
+        }
+
+        public static Map<String, Object> getMap(STATE state) {
+            String addressFile = Constants.Addresses.getAddressFile(state);
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(addressFile, 1, true);
+            return maps.get(0);
+        }
+
+        public static JsonObject getJsonObject() {
+            Map<String, Object> map = getMap();
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static JsonObject getJsonObject(COUNTRY country) {
+            Map<String, Object> map = getMap(country);
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static JsonObject getJsonObject(STATE state) {
+            Map<String, Object> map = getMap(state);
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static com.easypost.model.Address get() {
+            try {
+                Map<String, Object> map = getMap();
+                return com.easypost.model.Address.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static com.easypost.model.Address get(COUNTRY country) {
+            try {
+                Map<String, Object> map = getMap(country);
+                return com.easypost.model.Address.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static com.easypost.model.Address get(STATE state) {
+            try {
+                Map<String, Object> map = getMap(state);
+                return com.easypost.model.Address.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Map<String, Object>> getMapsSameState(int amount) {
+            STATE state = STATE.getRandom();
+            String stateAddressFile = Constants.Addresses.getAddressFile(state);
+            return JSONReader.getRandomMapsFromJsonFile(stateAddressFile, amount, false);
+        }
+
+        public static List<JsonObject> getJsonObjectsSameState(int amount) {
+            List<Map<String, Object>> maps = getMapsSameState(amount);
+            List<JsonObject> jsonObjects = new ArrayList<>();
+            for (Map<String, Object> map : maps) {
+                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
+            }
+            return jsonObjects;
+        }
+
+        public static List<com.easypost.model.Address> getSameState(int amount) {
+            try {
+                List<Map<String, Object>> maps = getMapsSameState(amount);
+                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                for (Map<String, Object> map : maps) {
+                    addresses.add(com.easypost.model.Address.create(map));
+                }
+                return addresses;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Map<String, Object>> getMapsDifferentStates(int amount) {
+            if (amount > STATE.getAmount()) {
+                throw new IllegalArgumentException("Amount cannot be greater than " + STATE.getAmount());
+            }
+
+            List<Map<String, Object>> maps = new ArrayList<>();
+            List<Object> states = Random.getRandomItemsFromList(STATE.getAll(), amount, false);
+            for (Object state : states) {
+                maps.add(getMap((STATE) state));
+            }
+            return maps;
+        }
+
+        public static List<JsonObject> getJsonObjectsDifferentStates(int amount) {
+            List<Map<String, Object>> maps = getMapsDifferentStates(amount);
+            List<JsonObject> jsonObjects = new ArrayList<>();
+            for (Map<String, Object> map : maps) {
+                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
+            }
+            return jsonObjects;
+        }
+
+        public static List<com.easypost.model.Address> getDifferentStates(int amount) {
+            try {
+                List<Map<String, Object>> maps = getMapsDifferentStates(amount);
+                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                for (Map<String, Object> map : maps) {
+                    addresses.add(com.easypost.model.Address.create(map));
+                }
+                return addresses;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Map<String, Object>> getMapsSameCountry(int amount) {
+            COUNTRY country = COUNTRY.getRandom();
+            if (country == COUNTRY.UNITED_STATES) {
+                return getMapsDifferentStates(amount);
+            }
+            String countryAddressFile = Constants.Addresses.getAddressFile(country);
+            return JSONReader.getRandomMapsFromJsonFile(countryAddressFile, amount, false);
+        }
+
+        public static List<JsonObject> getJsonObjectsSameCountry(int amount) {
+            List<Map<String, Object>> maps = getMapsSameCountry(amount);
+            List<JsonObject> jsonObjects = new ArrayList<>();
+            for (Map<String, Object> map : maps) {
+                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
+            }
+            return jsonObjects;
+        }
+
+        public static List<com.easypost.model.Address> getSameCountry(int amount) {
+            try {
+                List<Map<String, Object>> maps = getMapsSameCountry(amount);
+                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                for (Map<String, Object> map : maps) {
+                    addresses.add(com.easypost.model.Address.create(map));
+                }
+                return addresses;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static List<Map<String, Object>> getMapsDifferentCountries(int amount) {
+            if (amount > COUNTRY.getAmount()) {
+                throw new IllegalArgumentException("Amount cannot be greater than " + COUNTRY.getAmount());
+            }
+
+            List<Map<String, Object>> maps = new ArrayList<>();
+            List<Object> countries = Random.getRandomItemsFromList(COUNTRY.getAll(), amount, false);
+            for (Object country : countries) {
+                maps.add(getMap((COUNTRY) country));
+            }
+            return maps;
+        }
+
+        public static List<JsonObject> getJsonObjectsDifferentCountries(int amount) {
+            List<Map<String, Object>> maps = getMapsDifferentCountries(amount);
+            List<JsonObject> jsonObjects = new ArrayList<>();
+            for (Map<String, Object> map : maps) {
+                jsonObjects.add(JSONReader.convertMapToJsonObject(map));
+            }
+            return jsonObjects;
+        }
+
+        public static List<com.easypost.model.Address> getDifferentCountries(int amount) {
+            try {
+                List<Map<String, Object>> maps = getMapsDifferentCountries(amount);
+                List<com.easypost.model.Address> addresses = new ArrayList<com.easypost.model.Address>();
+                for (Map<String, Object> map : maps) {
+                    addresses.add(com.easypost.model.Address.create(map));
+                }
+                return addresses;
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 
-    public static JsonObject getRandomTrackerJsonObject() {
-        Map<String, Object> map = getRandomTrackerMap();
-        return convertMapToJsonObject(map);
+    public static class Parcel {
+
+        public static Map<String, Object> getMap() {
+            Map<String, Object> map = new HashMap<>();
+            map.put("weight", Random.getRandomFloatInRange(0, 100));
+            map.put("height", Random.getRandomFloatInRange(0, 100));
+            map.put("width", Random.getRandomFloatInRange(0, 100));
+            map.put("length", Random.getRandomFloatInRange(0, 100));
+            return map;
+        }
+
+        public static JsonObject getJsonObject() {
+            Map<String, Object> map = getMap();
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static com.easypost.model.Parcel get() {
+            try {
+                Map<String, Object> map = getMap();
+                return com.easypost.model.Parcel.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
     }
 
-    public static Tracker getRandomTracker() {
-        try {
-            Map<String, Object> map = getRandomTrackerMap();
-            return Tracker.create(map);
-        } catch (Exception e) {
-            return null;
+    public static class Shipment {
+
+        public static Map<String, Object> getMap() {
+            try {
+                List<Map<String, Object>> addressMaps = Address.getMapsDifferentStates(2);
+                Map<String, Object> parcelMap = Parcel.getMap();
+
+                Map<String, Object> shipmentMap = new HashMap<>();
+                shipmentMap.put("to_address", addressMaps.get(0));
+                shipmentMap.put("from_address", addressMaps.get(1));
+                shipmentMap.put("parcel", parcelMap);
+                return shipmentMap;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static JsonObject getJsonObject() {
+            Map<String, Object> map = getMap();
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static com.easypost.model.Shipment get() {
+            try {
+                Map<String, Object> map = getMap();
+                return com.easypost.model.Shipment.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    public static class TaxIdentifier {
+
+        /*
+        public static List<TaxIdentifier> getRandomTaxIdentifiers() {
+            try {
+                com.easypost.model.Shipment shipment = Shipment.get();
+                assert shipment != null;
+                return shipment.getTaxIdentifiers();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+         */
+    }
+
+    public static class CustomsItem {
+
+        public static List<Map<String, Object>> getRandomCustomsItemMaps(int amount, boolean allowDuplicates) {
+            return JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_ITEMS_JSON, amount, allowDuplicates);
+        }
+
+        public static JsonObject getRandomCustomsItemJsonObject() {
+            List<Map<String, Object>> maps = getRandomCustomsItemMaps(1, true);
+            return JSONReader.convertMapToJsonObject(maps.get(0));
+        }
+
+        public static List<com.easypost.model.CustomsItem> get(int amount, boolean allowDuplicates) {
+            try {
+                List<Map<String, Object>> maps = getRandomCustomsItemMaps(amount, allowDuplicates);
+                List<com.easypost.model.CustomsItem> customsItems = new ArrayList<com.easypost.model.CustomsItem>();
+                for (Map<String, Object> map : maps) {
+                    customsItems.add(com.easypost.model.CustomsItem.create(map));
+                }
+                return customsItems;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+    }
+
+    public static class CustomsInfo {
+
+        public static Map<String, Object> getMap(int itemsAmount, boolean allowDuplicatesItems) {
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.CUSTOMS_INFO_JSON, 1, true);
+            Map<String, Object> map = maps.get(0);
+            map.put("customs_items", CustomsItem.getRandomCustomsItemMaps(itemsAmount, allowDuplicatesItems));
+            return map;
+        }
+
+        public static JsonObject getJsonObject(int itemsAmount, boolean allowDuplicatesItems) {
+            Map<String, Object> map = getMap(itemsAmount, allowDuplicatesItems);
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static com.easypost.model.CustomsInfo get(int itemsAmount, boolean allowDuplicatesItems) {
+            try {
+                Map<String, Object> map = getMap(itemsAmount, allowDuplicatesItems);
+                return com.easypost.model.CustomsInfo.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+    }
+
+    public static class Carrier {
+
+        public static List<String> get(int amount) {
+            List<String> carriersStrings = new ArrayList<>();
+            List<Object> carriers = JSONReader.getRandomItemsFromJsonFile(Constants.CARRIERS_JSON, amount, false);
+            for (Object carrier : carriers) {
+                carriersStrings.add(carrier.toString());
+            }
+            return carriersStrings;
+        }
+
+        public static String get() {
+            List<String> carriers = get(1);
+            return carriers.get(0);
+        }
+
+    }
+
+    public static class Label {
+
+        public static Map<String, Object> getRandomLabelOptions() {
+            List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.LABEL_OPTIONS_JSON, 1, true);
+            return maps.get(0);
+        }
+
+        public static JsonObject getRandomLabelOptionsJsonObject() {
+            Map<String, Object> map = getRandomLabelOptions();
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+    }
+
+    public static class PostageLabel {
+
+        public static com.easypost.model.PostageLabel get() {
+            try {
+                return Shipment.get().getPostageLabel();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+    }
+
+    public static class Fee {
+        public static List<com.easypost.model.Fee> get() {
+            try {
+                return Shipment.get().getFees();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    public static class Insurance {
+
+        public static Map<String, Object> getInsuranceMap(float amount) {
+            Map<String, Object> insuranceMap = new HashMap<>();
+            insuranceMap.put("amount", amount);
+            return insuranceMap;
+        }
+
+        public static Map<String, Object> getMap() {
+            return getInsuranceMap(Random.getRandomFloatInRange(1, 100));
+        }
+
+    }
+
+    public static class Tracker {
+
+        public static Map<String, Object> getMap() {
+            try {
+                List<Map<String, Object>> maps = JSONReader.getRandomMapsFromJsonFile(Constants.TRACKERS_JSON, 1, true);
+                return maps.get(0);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static JsonObject getJsonObject() {
+            Map<String, Object> map = getMap();
+            return JSONReader.convertMapToJsonObject(map);
+        }
+
+        public static com.easypost.model.Tracker get() {
+            try {
+                Map<String, Object> map = getMap();
+                return com.easypost.model.Tracker.create(map);
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }

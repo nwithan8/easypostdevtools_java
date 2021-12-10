@@ -1,6 +1,7 @@
 package com.nwithan8.easypostdevtools.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -59,4 +60,10 @@ public class JSONReader {
         return Random.getRandomItemsFromList(data, amount, allowDuplicates);
     }
 
+    public static JsonObject convertMapToJsonObject(Map<String, Object> map) {
+        if (map == null) {
+            return null;
+        }
+        return new Gson().toJsonTree(map).getAsJsonObject();
+    }
 }

@@ -57,13 +57,14 @@ public class Random {
         if (!allowDuplicates && amount > list.size()) {
             throw new IllegalArgumentException("Amount must be less than or equal to list size when unique is true");
         }
+        ArrayList<Object> arrayList = new ArrayList<>(list);
 
         List<Object> items = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            Object item = list.get(getRandomIntInRange(0, list.size() - 1));
+            Object item = arrayList.get(getRandomIntInRange(0, arrayList.size() - 1));
             items.add(item);
             if (!allowDuplicates) {
-                list.remove(item);
+                arrayList.remove(item);
             }
         }
         return items;
