@@ -12,6 +12,7 @@ import com.easypost.model.Shipment;
 import com.easypost.model.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.nwithan8.easypostdevtools.utils.Helpers;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import com.nwithan8.easypostdevtools.Constants.Addresses.COUNTRY;
@@ -20,6 +21,7 @@ import com.nwithan8.easypostdevtools.utils.Random;
 import com.nwithan8.easypostdevtools.utils.JSONReader;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -630,8 +632,11 @@ public class EasyPostDevTools {
 
                 // List<Map<String, Object>> carrierAccountsMaps = CarrierAccounts.getMaps(1, true);
 
+                List<Date> dates = Helpers.Dates.getDates(2);
+                map.put("min_datetime", dates.get(0).toString());
+                map.put("max_datetime", dates.get(1).toString());
 
-                // map.put()
+                return map;
             } catch (Exception e) {
                 return null;
             }
