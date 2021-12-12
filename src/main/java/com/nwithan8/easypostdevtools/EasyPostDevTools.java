@@ -8,8 +8,10 @@ import com.easypost.model.Fee;
 import com.easypost.model.Parcel;
 import com.easypost.model.PostageLabel;
 import com.easypost.model.Rate;
+import com.easypost.model.Report;
 import com.easypost.model.Shipment;
 import com.easypost.model.Tracker;
+import com.easypost.model.Webhook;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.nwithan8.easypostdevtools.utils.Dates;
@@ -632,7 +634,7 @@ public class EasyPostDevTools {
 
                 // List<Map<String, Object>> carrierAccountsMaps = CarrierAccounts.getMaps(1, true);
 
-                List<Date> dates = Dates.getDates(2);
+                List<Date> dates = Dates.getFutureDates(2);
                 map.put("min_datetime", dates.get(0).toString());
                 map.put("max_datetime", dates.get(1).toString());
 
@@ -643,11 +645,56 @@ public class EasyPostDevTools {
         }
     }
 
-    public static class Reports {}
+    public static class Reports {
+
+        public static Map<String, Object> getMap() {
+            try {
+                Map<String, Object> dateMap = new HashMap<String, Object>();
+                List<Date> dates = Dates.getPastDates(2);
+                dateMap.put("start_date", dates.get(1).toString());
+                dateMap.put("end_date", dates.get(0).toString());
+
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("shipment", dateMap);
+                return map;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Report get() {
+            try {
+                Map<String, Object> map = getMap();
+                return Report.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
 
     public static class ScanForms {}
 
-    public static class Webhooks {}
+    public static class Webhooks {
+
+        public static Map<String, Object> getMap() {
+            try {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("url", "http://www.google.com");
+                return map;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static Webhook get() {
+            try {
+                Map<String, Object> map = getMap();
+                return Webhook.create(map);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
 
     public static class Users {}
 

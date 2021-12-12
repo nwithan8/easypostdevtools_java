@@ -108,12 +108,23 @@ public class Dates {
         return calendar.getTime();
     }
 
-    public static List<Date> getDates(int numberOfDates) {
+    public static List<Date> getFutureDates(int numberOfDates) {
         // returns a list of dates in chronological order
         List<Date> dates = new ArrayList<Date>();
         Date currentDate = nowDate;
         for (int i = 0; i < numberOfDates; i++) {
             currentDate = getDateAfter(currentDate);
+            dates.add(currentDate);
+        }
+        return dates;
+    }
+
+    public static List<Date> getPastDates(int numberOfDates) {
+        // returns a list of dates in backwards chronological order
+        List<Date> dates = new ArrayList<Date>();
+        Date currentDate = nowDate;
+        for (int i = 0; i < numberOfDates; i++) {
+            currentDate = getDateBefore(currentDate);
             dates.add(currentDate);
         }
         return dates;
