@@ -645,7 +645,7 @@ public class EasyPostDevTools {
         }
     }
 
-    public static class Reports {
+    public static class Reports extends Mapper {
 
         public static Map<String, Object> getMap() {
             try {
@@ -674,7 +674,7 @@ public class EasyPostDevTools {
 
     public static class ScanForms {}
 
-    public static class Webhooks {
+    public static class Webhooks extends Mapper {
 
         public static Map<String, Object> getMap() {
             try {
