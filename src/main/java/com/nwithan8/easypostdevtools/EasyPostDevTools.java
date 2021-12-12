@@ -12,7 +12,7 @@ import com.easypost.model.Shipment;
 import com.easypost.model.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.nwithan8.easypostdevtools.utils.Helpers;
+import com.nwithan8.easypostdevtools.utils.Dates;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import com.nwithan8.easypostdevtools.Constants.Addresses.COUNTRY;
@@ -632,7 +632,7 @@ public class EasyPostDevTools {
 
                 // List<Map<String, Object>> carrierAccountsMaps = CarrierAccounts.getMaps(1, true);
 
-                List<Date> dates = Helpers.Dates.getDates(2);
+                List<Date> dates = Dates.getDates(2);
                 map.put("min_datetime", dates.get(0).toString());
                 map.put("max_datetime", dates.get(1).toString());
 

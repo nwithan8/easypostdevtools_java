@@ -59,11 +59,4 @@ public class JSONReader {
         ArrayList<Object> data = readJsonFileArray(path);
         return Random.getRandomItemsFromList(data, amount, allowDuplicates);
     }
-
-    public static JsonObject convertMapToJsonObject(Map<String, Object> map) {
-        if (map == null) {
-            return null;
-        }
-        return new Gson().toJsonTree(map).getAsJsonObject();
-    }
 }
