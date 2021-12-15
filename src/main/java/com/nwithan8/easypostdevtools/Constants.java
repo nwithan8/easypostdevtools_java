@@ -12,6 +12,8 @@ public class Constants {
     public static final String CARRIERS_JSON = "json/carriers.json";
     public static final String LABEL_OPTIONS_JSON = "json/label_options.json";
     public static final String TRACKERS_JSON = "json/trackers.json";
+    public static final String OPTIONS_JSON = "json/options.json";
+    public static final String PICKUPS_JSON = "json/pickups.json";
 
     public static class Addresses {
         public enum COUNTRY {
