@@ -75,8 +75,4 @@ public class Random {
         List<Object> items = getRandomItemsFromList(list, 1, true);
         return items.get(0);
     }
-
-    public static Constants.Addresses.COUNTRY getRandomEnum(Class<Constants.Addresses.COUNTRY> countryClass) {
-        return countryClass.getEnumConstants()[getRandomIntInRange(0, countryClass.getEnumConstants().length - 1)];
-    }
 }

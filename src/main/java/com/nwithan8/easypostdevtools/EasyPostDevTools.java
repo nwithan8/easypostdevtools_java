@@ -590,7 +590,8 @@ public class EasyPostDevTools {
 
         public static List<Fee> get() {
             try {
-                return Shipments.get().getFees();
+                Shipment shipment = Shipments.get();
+                return get(shipment);
             } catch (Exception e) {
                 return null;
             }
@@ -606,7 +607,8 @@ public class EasyPostDevTools {
 
         public static List<Fee> get(Map<String, Object> shipmentMap) {
             try {
-                return Shipment.create(shipmentMap).getFees();
+                Shipment shipment = Shipments.create(shipmentMap);
+                return get(shipment);
             } catch (Exception e) {
                 return null;
             }

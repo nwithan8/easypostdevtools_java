@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class JSONReader {
 
-    public static Path getFilePathFromResources(String filename) throws URISyntaxException, IOException {
+    private static Path getFilePathFromResources(String filename) throws URISyntaxException, IOException {
         URL resource = JSONReader.class.getClassLoader().getResource(filename);
         return Paths.get(resource.toURI());
     }
