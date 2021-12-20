@@ -92,7 +92,7 @@ public class Dates {
         calendar.setTime(date);
         if (date.getMonth() == Calendar.DECEMBER) {
             // if it's December, set up the next date to be in January
-            calendar.add(Calendar.MONTH, Calendar.JANUARY);
+            calendar.set(Calendar.MONTH, Calendar.JANUARY);
             calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 1);
             calendar.set(Calendar.DAY_OF_MONTH, 1);
         }

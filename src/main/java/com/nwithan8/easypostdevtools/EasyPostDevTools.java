@@ -735,7 +735,8 @@ public class EasyPostDevTools {
 
         public static PostageLabel get() {
             try {
-                return Shipments.get().getPostageLabel();
+                Shipment shipment = Shipments.get();
+                return get(shipment);
             } catch (Exception e) {
                 return null;
             }
@@ -743,7 +744,8 @@ public class EasyPostDevTools {
 
         public static PostageLabel get(Map<String, Object> shipmentMap) {
             try {
-                return Shipment.create(shipmentMap).getPostageLabel();
+                Shipment shipment = Shipment.create(shipmentMap);
+                return get(shipment);
             } catch (Exception e) {
                 return null;
             }
@@ -756,7 +758,5 @@ public class EasyPostDevTools {
                 return null;
             }
         }
-
     }
-
 }
