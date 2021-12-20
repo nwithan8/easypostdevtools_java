@@ -43,8 +43,10 @@ public class EasyPostDevTools {
         switch (type) {
             case TEST:
                 setupKey(dotenv.get("EASYPOST_TEST_KEY"));
+                break;
             case PRODUCTION:
                 setupKey(dotenv.get("EASYPOST_PROD_KEY"));
+                break;
         }
     }
 
