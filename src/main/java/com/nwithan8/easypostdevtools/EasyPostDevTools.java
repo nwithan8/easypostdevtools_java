@@ -533,22 +533,22 @@ public class EasyPostDevTools {
     public static class CustomsInfos extends Mapper {
 
         public static Map<String, Object> getMap(int itemsAmount,
-                                                 boolean allowDuplicatesItems) {
+                                                 boolean allowDuplicateItems) {
             List<Map<String, Object>> maps =
                     JSONReader.getRandomMapsFromJsonFile(
                             Constants.CUSTOMS_INFO_JSON, 1, true);
             Map<String, Object> map = maps.get(0);
             map.put("customs_items",
                     CustomsItems.getRandomCustomsItemMaps(itemsAmount,
-                            allowDuplicatesItems));
+                            allowDuplicateItems));
             return map;
         }
 
         public static CustomsInfo get(int itemsAmount,
-                                      boolean allowDuplicatesItems) {
+                                      boolean allowDuplicateItems) {
             try {
                 Map<String, Object> map =
-                        getMap(itemsAmount, allowDuplicatesItems);
+                        getMap(itemsAmount, allowDuplicateItems);
                 return CustomsInfo.create(map);
             } catch (Exception e) {
                 return null;
@@ -732,6 +732,22 @@ public class EasyPostDevTools {
         public static PostageLabel get() {
             try {
                 return Shipments.get().getPostageLabel();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static PostageLabel get(Map<String, Object> shipmentMap) {
+            try {
+                return Shipment.create(shipmentMap).getPostageLabel();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public static PostageLabel get(Shipment shipment) {
+            try {
+                return shipment.getPostageLabel();
             } catch (Exception e) {
                 return null;
             }

@@ -10,7 +10,7 @@ public class Random {
 
     private static final java.util.Random random = new java.util.Random();
 
-    public static boolean getRandomTrueFalse() {
+    public static boolean getRandomBoolean() {
         return random.nextBoolean();
     }
 
@@ -51,7 +51,7 @@ public class Random {
     }
 
     public static String getRandomString() {
-        return getRandomString(10);
+        return getRandomString(getRandomIntInRange(3, 10));
     }
 
     public static List<Object> getRandomItemsFromList(List<?> list, int amount, boolean allowDuplicates) {

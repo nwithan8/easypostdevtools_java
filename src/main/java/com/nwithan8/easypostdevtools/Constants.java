@@ -16,6 +16,7 @@ public class Constants {
     public static final String PICKUPS_JSON = "json/pickups.json";
 
     public static class Addresses {
+
         public enum COUNTRY {
             UNITED_STATES("US", "united-states"),
             CANADA("BC", "canada"),
@@ -113,7 +114,6 @@ public class Constants {
             }
 
             return getAddressFile(country.getJSONPath());
-
         }
 
         public static String getRandomStateAddressFile() {
@@ -127,7 +127,7 @@ public class Constants {
         }
 
         public static String getRandomAddressFile() {
-            if (Random.getRandomTrueFalse()) {
+            if (Random.getRandomBoolean()) {
                 return getRandomCountryAddressFile();
             } else {
                 return getRandomStateAddressFile();
